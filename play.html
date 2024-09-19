@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Typing Land - Web Edition</title>    
+    <meta property="og:title" content="Typing Land - Web Edition">
+    <meta property="og:url" content="https://typingland.higopage.com/play/">
+    <meta property="og:type" content="product">
+    <meta property="og:image" content="https://typingland.higopage.com/play/TemplateData/ogp.png">
+    <meta property="og:site_name" content="Typing Land - Web Edition">
+    <meta property="og:description" content="A fun and exciting app for your typing practice">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Typing Land - Web Edition">
+    <meta name="twitter:description" content="A fun and exciting app for your typing practice">
+    <meta name="twitter:image" content="https://typingland.higopage.com/play/TemplateData/ogp.png">
+    <meta name="twitter:site" content="@higopage">    
+    <link rel="shortcut icon" href="https://typingland.higopage.com/play/TemplateData/favicon.ico">
+    <link rel="apple-touch-icon" href="https://typingland.higopage.com/play/TemplateData/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://typingland.higopage.com/play/TemplateData/style.css">
+    <link rel="manifest" href="https://typingland.higopage.com/play/manifest.webmanifest">
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width=1024 height=576></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    <script>
+      window.addEventListener("load", function () {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("ServiceWorker.js");
+        }
+      });
+    
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/TypingLand-WebGL.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/TypingLand-WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/TypingLand-WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/TypingLand-WebGL.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "higopage",
+        productName: "TypingLand",
+        productVersion: "1.1.5",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|CrOS|Android/i.test(navigator.userAgent)) {
+        config.devicePixelRatio = 1;
+      }
+      
+      const aspectRatio = 1024 / 576;
+      let w = window.innerWidth;
+      let h = window.innerHeight;
+      if (w / h > aspectRatio) {
+        w = Math.floor(aspectRatio * h);
+      } else {
+        h = Math.floor(w / aspectRatio);
+      }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
